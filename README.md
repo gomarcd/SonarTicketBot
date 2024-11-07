@@ -1,19 +1,21 @@
 # SonarTicketBot
 
-A simple Cloudflare Worker which listens for a webhook event from Sonar and creates a new ticket based on its payload.
-
 This is a first draft.
 
-## Considerations
+Bot simply does this:
 
-Basically a microservice. A nano service. A pico service. This thing literally barely does *anything*.
+:point_right: Listens for IP assignment webhook from Sonar
 
-But some may find it handy.
+:point_right: Payload of matching event verified for "soft": false
 
-Later iterations may add functionality, or the bot could be forked to handle different scenarios, or used as part of a broader application that provides a suite of value-adds with other such simple bots.
+:point_right: createPublicTicket mutation sent to specified instance GraphQL API
 
 ## Security
 
-Being under Cloudflare, a number of security features are included out of the box.
+Being under Cloudflare, its usual security features are included out of the box. Additionally:
 
-The bot will also only accept incoming requests from a specified host.
+:white_check_mark: Requests are only accepted from specified host(s)
+
+:white_check_mark: Environment variables are encrypted
+
+:white_check_mark: Can optionally reside within client network
