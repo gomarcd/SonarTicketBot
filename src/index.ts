@@ -18,10 +18,9 @@ interface WebhookPayload {
 	triggered_at: string;
   }
   
-  // The actual Worker code
+  // Listen for webhook
   export default {
 	async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
-	  // Parse the incoming webhook payload
 	  let payload: WebhookPayload;
 	  try {
 		payload = await request.json() as WebhookPayload;
@@ -29,11 +28,11 @@ interface WebhookPayload {
 		return new Response("Invalid JSON payload", { status: 400 });
 	  }
   
-	  // Extract the `ipassignmentable_id` from the payload
+	  // Get Account ID (ipassignmentable_id)
 	  const ipassignmentableId = payload.current.ipassignmentable_id;
 	  const subnet = payload.current.subnet;
   
-	  // Construct the GraphQL mutation query with required fields
+	  // Set up GraphQL mutation to create ticket
 	  const mutation = `
 		mutation newTicket {
 		  createPublicTicket(input: {
@@ -49,8 +48,8 @@ interface WebhookPayload {
 		}
 	  `;
   
-	  // Make the API call using the environment variable for the API token
-	  const apiResponse = await fetch(env.SECRET_KEY, {
+	  // Send mutation to instance GraphQL API
+	  const apiResponse = await fetch(env.INSTANCE, {
 		method: "POST",
 		headers: {
 		  "Content-Type": "application/json",
@@ -61,7 +60,7 @@ interface WebhookPayload {
 		}),
 	  });
   
-	  // Check the API response
+	  // Fail successfully
 	  if (!apiResponse.ok) {
 		const errorText = await apiResponse.text();
 		return new Response(`Error in GraphQL API call: ${errorText}`, { status: 500 });
@@ -69,7 +68,7 @@ interface WebhookPayload {
   
 	  const responseData = await apiResponse.json();
   
-	  // Return a success response
+	  // Show successful confirmation
 	  return new Response(JSON.stringify({ status: "Webhook processed and ticket created", data: responseData }), {
 		headers: { "Content-Type": "application/json" },
 	  });
